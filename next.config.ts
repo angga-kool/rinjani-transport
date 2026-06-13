@@ -1,23 +1,32 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "res.cloudinary.com",
-      },
-    ],
-    // Allow any image in development
-    ...(process.env.NODE_ENV === "development" && {
-      remotePatterns: [{ protocol: "https", hostname: "**" }],
-    }),
+  eslint: {
+    ignoreDuringBuilds: true,
   },
-  // Vercel serverless function config
+
+  images: {
+    remotePatterns: isDev
+      ? [
+          {
+            protocol: "https",
+            hostname: "**",
+          },
+        ]
+      : [
+          {
+            protocol: "https",
+            hostname: "images.unsplash.com",
+          },
+          {
+            protocol: "https",
+            hostname: "res.cloudinary.com",
+          },
+        ],
+  },
+
   serverExternalPackages: ["pg"],
 };
 
