@@ -10,24 +10,27 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function FAQPage() {
-  // Fetch FAQs from database
-  const faqs = await prisma.faq.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  try {
+    const faqs = await prisma.faq.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+    });
 
-  // Group by category
-  const grouped: Record<string, { question: string; answer: string }[]> = {};
-  for (const faq of faqs) {
-    const cat = faq.category ?? "General";
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push({ question: faq.question, answer: faq.answer });
+    const grouped: Record<string, { question: string; answer: string }[]> = {};
+    for (const faq of faqs) {
+      const cat = faq.category ?? "General";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push({ question: faq.question, answer: faq.answer });
+    }
+
+    const faqData = Object.entries(grouped).map(([category, items]) => ({
+      category,
+      items,
+    }));
+
+    return <FAQPageContent faqData={faqData} />;
+  } catch (error) {
+    console.error("Failed to load FAQs:", error);
+    return <FAQPageContent faqData={[]} />;
   }
-
-  const faqData = Object.entries(grouped).map(([category, items]) => ({
-    category,
-    items,
-  }));
-
-  return <FAQPageContent faqData={faqData} />;
 }

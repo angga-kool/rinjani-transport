@@ -10,21 +10,22 @@ function createPrismaClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("DATABASE_URL environment variable is not set");
+    console.error("DATABASE_URL environment variable is not set!");
+    // Return a client that will throw on use — prevents build crash
+    return new PrismaClient() as PrismaClient;
   }
 
   const pool = new Pool({
     connectionString,
-    // Enable SSL for production (Neon, Supabase, Railway, etc.)
-    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
-    // Connection pool settings for serverless
+    ssl: connectionString.includes("sslmode=require") || process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : undefined,
     max: 5,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
   });
 
   const adapter = new PrismaPg(pool);
-
   return new PrismaClient({ adapter });
 }
 
