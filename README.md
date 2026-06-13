@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rinjani Transport — Lombok & Gili Islands Transfer Booking
+
+A full-stack travel transfer booking platform built with Next.js 16, Prisma, PostgreSQL, and Tailwind CSS.
+
+## Features
+
+- 🚤 Search & book speed boat, private car, and shared transfers
+- 🌐 Multi-language (10 languages) & multi-currency (7 currencies)
+- 💳 Multiple payment methods (QRIS, PayPal, Credit Card, USDT, Bank Transfer)
+- 📧 Instant e-ticket via email
+- 🏝️ 12+ destinations, 18+ routes, 4 verified operators
+- 👨‍💼 Admin panel for managing routes, bookings, and operators
+- 🚀 Company/operator panel for managing schedules
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router, Turbopack)
+- **Database:** PostgreSQL + Prisma ORM
+- **Auth:** NextAuth v5 (Credentials)
+- **Styling:** Tailwind CSS v4
+- **Language:** TypeScript
+- **Deployment:** Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL database
+- npm or yarn
+
+### Installation
+
+```bash
+cd transport-rinjani
+npm install
+```
+
+### Environment Setup
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+Required variables:
+- `DATABASE_URL` — PostgreSQL connection string
+- `NEXTAUTH_SECRET` — Random secret (generate with `openssl rand -base64 32`)
+- `NEXTAUTH_URL` — Your app URL
+
+### Database Setup
+
+```bash
+# Push schema to database
+npx prisma db push
+
+# Generate Prisma client
+npx prisma generate
+
+# Seed sample data
+npm run db:seed
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Deploy to Vercel
 
-To learn more about Next.js, take a look at the following resources:
+### 1. Database Setup (Neon)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Go to [neon.tech](https://neon.tech) and create a free account
+2. Create a new project (Region: Singapore)
+3. Copy the connection string
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. Deploy
 
-## Deploy on Vercel
+1. Push code to GitHub
+2. Go to [vercel.com](https://vercel.com) → Import Git Repository
+3. Set environment variables:
+   - `DATABASE_URL` = your Neon connection string
+   - `NEXTAUTH_SECRET` = `openssl rand -base64 32`
+   - `NEXTAUTH_URL` = `https://your-project.vercel.app`
+4. Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. Post-Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Push schema to production database
+npx prisma db push
+
+# Seed production data
+npm run db:seed
+```
+
+## Login Credentials (Dev)
+
+- **Admin:** admin@rinjanitransport.com / admin123
+- **Operator:** operator@gilispeedboat.com / operator123
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── (public)/          # Public pages (routes, destinations, booking, etc.)
+│   ├── admin/             # Admin panel
+│   ├── company/           # Operator panel
+│   └── api/               # API routes
+├── components/
+│   ├── public/            # Public UI components
+│   ├── booking/           # Booking flow components
+│   ├── admin/             # Admin components
+│   └── ui/                # Shared UI components
+├── lib/
+│   ├── db.ts              # Prisma client
+│   ├── auth-config.ts     # NextAuth configuration
+│   ├── password.ts        # PBKDF2 password hashing
+│   ├── rate-limit.ts      # Rate limiting
+│   ├── validations.ts     # Zod schemas
+│   ├── booking-store.ts   # Client-side booking state
+│   └── actions/           # Server actions (admin, booking)
+├── providers/             # React context providers
+└── messages/              # i18n translations (10 languages)
+```
+
+## License
+
+Private — Rinjani Transport
