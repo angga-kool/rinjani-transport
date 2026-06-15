@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { DestinationDetailContent } from "@/components/public/DestinationDetailContent";
 
+export const revalidate = 300;
+
 const EUR_TO_IDR = 17153;
 
 type Props = {
@@ -61,6 +63,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: location.seoTitle ?? `${location.name} Transfer | Rinjani Transport`,
     description: location.seoDescription ?? location.description ?? `Book your transfer to ${location.name}.`,
+    alternates: { canonical: `/destinations/${slug}` },
+    openGraph: {
+      title: location.seoTitle ?? `${location.name} Transfer | Rinjani Transport`,
+      description: location.seoDescription ?? location.description ?? `Book your transfer to ${location.name}.`,
+      url: `/destinations/${slug}`,
+    },
   };
 }
 

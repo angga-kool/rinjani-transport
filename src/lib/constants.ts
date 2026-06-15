@@ -8,7 +8,7 @@ export const NAV_LINKS = [
   { label: "Routes", href: "/routes" },
   { label: "Destinations", href: "/destinations" },
   { label: "Hotels", href: "/hotels" },
-  { label: "Travel Tips", href: "/about-us" },
+  { label: "Travel Tips", href: "/travel-tips" },
   { label: "FAQ", href: "/faq" },
   { label: "Contact", href: "/contact" },
 ] as const;
@@ -29,8 +29,9 @@ export const FOOTER_LINKS = {
     { label: "Lombok Airport", href: "/destinations/lombok-airport" },
   ],
   information: [
-    { label: "Travel Tips", href: "/faq" },
+    { label: "Travel Tips", href: "/travel-tips" },
     { label: "FAQ", href: "/faq" },
+    { label: "Track Booking", href: "/booking/tracking" },
     { label: "How It Works", href: "/about-us" },
     { label: "About Us", href: "/about-us" },
     { label: "Contact Us", href: "/contact" },

@@ -43,13 +43,56 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!serviceId || !routeId || !companyId || !departureDate || !departureTime || !customerName || !customerEmail || !customerPhone) {
+      const missing = [];
+      if (!serviceId) missing.push("serviceId");
+      if (!routeId) missing.push("routeId");
+      if (!companyId) missing.push("companyId");
+      if (!departureDate) missing.push("departureDate");
+      if (!departureTime) missing.push("departureTime");
+      if (!customerName) missing.push("customerName");
+      if (!customerEmail) missing.push("customerEmail");
+      if (!customerPhone) missing.push("customerPhone");
+
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: `Missing required fields: ${missing.join(", ")}. Please go back and complete all steps.` },
         { status: 400 }
       );
     }
 
     const bookingCode = generateBookingCode();
+
+    // Check service availability (capacity check)
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+      select: { capacity: true, isActive: true },
+    });
+
+    if (!service || !service.isActive) {
+      return NextResponse.json(
+        { error: "This service is no longer available" },
+        { status: 400 }
+      );
+    }
+
+    if (service.capacity) {
+      // Count existing active bookings for this service on same date
+      const existingBookings = await prisma.booking.count({
+        where: {
+          serviceId,
+          departureDate: new Date(departureDate),
+          departureTime,
+          bookingStatus: { in: ["pending", "waiting_payment", "confirmed"] },
+        },
+      });
+
+      const requestedSeats = (adults || 1) + (children || 0);
+      if (existingBookings + requestedSeats > service.capacity) {
+        return NextResponse.json(
+          { error: "Not enough seats available for this departure. Please try another time or date." },
+          { status: 409 }
+        );
+      }
+    }
 
     // Create booking in database
     const booking = await prisma.booking.create({
@@ -76,7 +119,8 @@ export async function POST(request: NextRequest) {
         flightNumber: flightNumber || null,
         specialRequest: specialRequest || null,
         paymentStatus: "pending",
-        bookingStatus: "pending",
+        bookingStatus: "waiting_payment",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // Expires in 1 hour
         passengers: {
           create: passengers.map((p: { name: string; type: string }) => ({
             name: p.name,

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
-import { useApp } from "@/providers/AppProvider";
+import { useApp, CURRENCIES, LANGUAGES } from "@/providers/AppProvider";
 import { LanguageCurrencySwitcher } from "@/components/ui/LanguageCurrencySwitcher";
 
 const NAV_ITEMS = [
@@ -12,14 +12,14 @@ const NAV_ITEMS = [
   { key: "nav.routes", href: "/routes" },
   { key: "nav.destinations", href: "/destinations" },
   { key: "nav.hotels", href: "/hotels" },
-  { key: "nav.travelTips", href: "/about-us" },
+  { key: "nav.travelTips", href: "/travel-tips" },
   { key: "nav.faq", href: "/faq" },
   { key: "nav.contact", href: "/contact" },
 ];
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { t } = useApp();
+  const { t, locale, setLocale, currency, setCurrency } = useApp();
 
   return (
     <>
@@ -125,9 +125,35 @@ export function SiteHeader() {
 
             <hr className="mx-4 border-gray-100" />
 
-            {/* Language/Currency */}
-            <div className="p-4">
-              <LanguageCurrencySwitcher className="flex-col items-start gap-3" />
+            {/* Language/Currency — Mobile friendly inline */}
+            <div className="p-4 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Settings</p>
+              {/* Currency */}
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">Currency</label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as typeof currency)}
+                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-900"
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.flag} {c.symbol} {c.code} — {c.name}</option>
+                  ))}
+                </select>
+              </div>
+              {/* Language */}
+              <div>
+                <label className="mb-1 block text-xs text-gray-500">Language</label>
+                <select
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as typeof locale)}
+                  className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm text-gray-900"
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Mobile CTA */}

@@ -12,10 +12,13 @@ import {
   Clock,
   DollarSign,
   HelpCircle,
+  Lightbulb,
+  Star,
   FileText,
   Search,
   Users,
   Settings,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,9 +32,12 @@ const ADMIN_MENU = [
   { label: "Schedules", href: "/admin/schedules", icon: Clock },
   { label: "Pricing", href: "/admin/pricing", icon: DollarSign },
   { label: "FAQ", href: "/admin/faq", icon: HelpCircle },
+  { label: "Travel Tips", href: "/admin/travel-tips", icon: Lightbulb },
+  { label: "Reviews", href: "/admin/reviews", icon: Star },
   { label: "Pages", href: "/admin/pages", icon: FileText },
   { label: "SEO", href: "/admin/seo", icon: Search },
   { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Activity Log", href: "/admin/activity", icon: Activity },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

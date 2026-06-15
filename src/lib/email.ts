@@ -161,3 +161,70 @@ export function generateAdminNotificationEmail(booking: {
 </body>
 </html>`;
 }
+
+export function generateStatusChangeEmail(data: {
+  bookingCode: string;
+  customerName: string;
+  newStatus: string;
+  route: string;
+  departureDate: string;
+}): string {
+  const statusMessages: Record<string, { title: string; color: string; message: string }> = {
+    confirmed: {
+      title: "Booking Confirmed ✓",
+      color: "#00AA6C",
+      message: "Your booking has been confirmed. Your e-ticket is ready for download.",
+    },
+    cancelled: {
+      title: "Booking Cancelled",
+      color: "#ef4444",
+      message: "Your booking has been cancelled. If you were charged, a refund will be processed within 3-5 business days.",
+    },
+    expired: {
+      title: "Booking Expired",
+      color: "#f59e0b",
+      message: "Your booking has expired because payment was not completed within the time limit. Please create a new booking if you still wish to travel.",
+    },
+    completed: {
+      title: "Trip Completed",
+      color: "#3b82f6",
+      message: "Thank you for traveling with us! We hope you had a great experience. Please consider leaving a review.",
+    },
+  };
+
+  const status = statusMessages[data.newStatus] || {
+    title: `Status: ${data.newStatus}`,
+    color: "#64748b",
+    message: `Your booking status has been updated to "${data.newStatus}".`,
+  };
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+<style>body{font-family:'Inter',Arial,sans-serif;margin:0;padding:0;background:#f8fafc}.container{max-width:600px;margin:0 auto;padding:24px}.card{background:white;border-radius:16px;padding:32px;border:1px solid #e2e8f0}.footer{text-align:center;margin-top:24px;font-size:12px;color:#94a3b8}</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:24px;">
+      <p style="font-size:20px;font-weight:700;color:#1f1f1f;">Rinjani Transport</p>
+      <p style="display:inline-block;background:${status.color}15;color:${status.color};padding:6px 16px;border-radius:999px;font-size:13px;font-weight:600;">${status.title}</p>
+    </div>
+    <p style="font-size:15px;color:#374151;">Hi ${data.customerName},</p>
+    <p style="font-size:14px;color:#6b7280;line-height:1.6;">${status.message}</p>
+    <div style="margin:24px 0;padding:16px;background:#f8fafc;border-radius:12px;">
+      <p style="margin:0 0 4px;font-size:12px;color:#94a3b8;">Booking Code</p>
+      <p style="margin:0;font-family:monospace;font-size:20px;font-weight:700;color:#1f1f1f;">${data.bookingCode}</p>
+      <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">${data.route} • ${data.departureDate}</p>
+    </div>
+    <div style="text-align:center;">
+      <a href="https://rinjanitransport.com/booking/tracking" style="display:inline-block;background:#00AA6C;color:white;padding:12px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:14px;">Track Your Booking</a>
+    </div>
+    <p style="margin-top:20px;font-size:12px;color:#94a3b8;">Need help? WhatsApp: +62 812 3456 7890</p>
+  </div>
+  <div class="footer"><p>© 2026 Rinjani Transport</p></div>
+</div>
+</body>
+</html>`;
+}

@@ -1,40 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Clock, ArrowRight } from "lucide-react";
 import { useApp } from "@/providers/AppProvider";
 
-const TIPS = [
-  {
-    title: "How to Get from Lombok Airport to Gili Trawangan",
-    excerpt: "Complete guide on the best transfer options from Lombok International Airport to Gili Trawangan island.",
-    category: "Transfer Guide",
-    readTime: "5 min",
-    image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&h=400&fit=crop",
-    href: "/routes/lombok-airport-to-gili-trawangan",
-  },
-  {
-    title: "Teluk Nare vs Bangsal: Which Harbour to Choose",
-    excerpt: "Compare the two main departure harbours to Gili Islands and find out which one is better for you.",
-    category: "Travel Tips",
-    readTime: "4 min",
-    image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&h=400&fit=crop",
-    href: "/destinations/teluk-nare",
-  },
-  {
-    title: "Best Time to Visit Gili Islands",
-    excerpt: "Find the perfect season for your Gili Islands trip. Weather, crowds, and booking tips included.",
-    category: "Planning",
-    readTime: "3 min",
-    image: "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=600&h=400&fit=crop",
-    href: "/destinations",
-  },
-];
+interface Tip {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  image: string | null;
+  category: string;
+  readTime: string | null;
+}
+
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop";
 
 export function TravelTipsSection() {
   const { t } = useApp();
+  const [tips, setTips] = useState<Tip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/travel-tips")
+      .then((res) => res.json())
+      .then((data) => {
+        if (active) setTips((data.tips || []).slice(0, 3));
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!loading && tips.length === 0) return null;
 
   return (
     <section className="py-12 md:py-16">
@@ -46,44 +53,70 @@ export function TravelTipsSection() {
         />
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {TIPS.map((tip) => (
-            <Link
-              key={tip.href}
-              href={tip.href}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-            >
-              <div className="relative aspect-[16/10] overflow-hidden">
-                <Image
-                  src={tip.image}
-                  alt={tip.title}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                <div className="absolute left-3 top-3">
-                  <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-800 backdrop-blur-sm">
-                    {tip.category}
-                  </span>
+          {loading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex animate-pulse flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white"
+                >
+                  <div className="aspect-[16/10] bg-gray-100" />
+                  <div className="space-y-2 p-4">
+                    <div className="h-4 w-3/4 rounded bg-gray-100" />
+                    <div className="h-3 w-full rounded bg-gray-100" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-1 flex-col p-4">
-                <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                  {tip.title}
-                </h3>
-                <p className="mt-2 text-xs text-gray-500 line-clamp-2">{tip.excerpt}</p>
-                <div className="mt-auto flex items-center justify-between pt-3">
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
-                    <Clock className="h-3 w-3" />
-                    {tip.readTime}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:gap-1.5 transition-all">
-                    {t("common.readMore")}
-                    <ArrowRight className="h-3 w-3" />
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
+              ))
+            : tips.map((tip) => (
+                <Link
+                  key={tip.id}
+                  href={`/travel-tips/${tip.slug}`}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image
+                      src={tip.image || FALLBACK_IMAGE}
+                      alt={tip.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                    <div className="absolute left-3 top-3">
+                      <span className="rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-800 backdrop-blur-sm">
+                        {tip.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-1 flex-col p-4">
+                    <h3 className="line-clamp-2 text-sm font-bold leading-snug text-gray-900 transition-colors group-hover:text-primary">
+                      {tip.title}
+                    </h3>
+                    {tip.excerpt && (
+                      <p className="mt-2 line-clamp-2 text-xs text-gray-500">{tip.excerpt}</p>
+                    )}
+                    <div className="mt-auto flex items-center justify-between pt-3">
+                      <span className="flex items-center gap-1 text-xs text-gray-400">
+                        <Clock className="h-3 w-3" />
+                        {tip.readTime || "5 min"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition-all group-hover:gap-1.5">
+                        {t("common.readMore")}
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+        </div>
+
+        {/* View all */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/travel-tips"
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:border-primary/40 hover:text-primary"
+          >
+            View All Travel Tips
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>

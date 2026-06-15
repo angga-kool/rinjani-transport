@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { RouteDetailContent } from "./RouteDetailContent";
 
+export const revalidate = 300;
+
 // EUR to IDR conversion factor
 const EUR_TO_IDR = 17153;
 
@@ -22,6 +24,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: route.seoTitle ?? route.title,
     description: route.seoDescription ?? route.description ?? `Book your ${route.title} transfer online.`,
+    alternates: { canonical: `/routes/${slug}` },
+    openGraph: {
+      title: route.seoTitle ?? route.title,
+      description: route.seoDescription ?? route.description ?? `Book your ${route.title} transfer online.`,
+      url: `/routes/${slug}`,
+    },
   };
 }
 
@@ -106,5 +114,20 @@ export default async function RouteDetailPage({ params }: Props) {
     services,
   };
 
-  return <RouteDetailContent route={routeData} />;
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://rinjanitransport.com" },
+      { "@type": "ListItem", position: 2, name: "Routes", item: "https://rinjanitransport.com/routes" },
+      { "@type": "ListItem", position: 3, name: route.title },
+    ],
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      <RouteDetailContent route={routeData} />
+    </>
+  );
 }

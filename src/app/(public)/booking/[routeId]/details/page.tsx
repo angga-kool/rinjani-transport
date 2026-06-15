@@ -85,7 +85,8 @@ export default function BookingDetailsPage() {
   const adults = parseInt(searchParams.get("adults") ?? "2");
   const children = parseInt(searchParams.get("children") ?? "0");
   const tripType = (searchParams.get("tripType") ?? "one_way") as "one_way" | "return";
-  const departureDate = searchParams.get("departureDate") ?? "";
+  const rawDepartureDate = searchParams.get("departureDate") ?? "";
+  const departureDate = rawDepartureDate || new Date(Date.now() + 86400000).toISOString().split("T")[0]; // default: tomorrow
 
   useEffect(() => {
     async function fetchRoute() {

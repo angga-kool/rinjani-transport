@@ -352,6 +352,82 @@ export async function deleteFaq(id: string) {
   }
 }
 
+// ===================== TRAVEL TIPS =====================
+
+function slugifyTip(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export async function createTravelTip(data: {
+  title: string;
+  slug?: string;
+  excerpt?: string;
+  content: string;
+  image?: string;
+  category?: string;
+  readTime?: string;
+  author?: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+}) {
+  try {
+    const finalSlug = data.slug?.trim() ? slugifyTip(data.slug) : slugifyTip(data.title);
+    await prisma.travelTip.create({
+      data: {
+        title: data.title,
+        slug: finalSlug,
+        excerpt: data.excerpt ?? null,
+        content: data.content,
+        image: data.image ?? null,
+        category: data.category ?? "Travel Tips",
+        readTime: data.readTime ?? null,
+        author: data.author ?? null,
+        sortOrder: data.sortOrder ?? 0,
+        isPublished: data.isPublished ?? true,
+        seoTitle: data.seoTitle ?? null,
+        seoDescription: data.seoDescription ?? null,
+      },
+    });
+    revalidatePath("/admin/travel-tips");
+    revalidatePath("/travel-tips");
+    return { success: true, message: "Travel tip created" };
+  } catch (error) {
+    console.error("[Admin Travel Tip Create Error]", error);
+    return { success: false, message: "Failed to create travel tip" };
+  }
+}
+
+export async function updateTravelTip(id: string, data: Record<string, unknown>) {
+  try {
+    await prisma.travelTip.update({ where: { id }, data });
+    revalidatePath("/admin/travel-tips");
+    revalidatePath("/travel-tips");
+    return { success: true, message: "Travel tip updated" };
+  } catch (error) {
+    console.error("[Admin Travel Tip Update Error]", error);
+    return { success: false, message: "Failed to update travel tip" };
+  }
+}
+
+export async function deleteTravelTip(id: string) {
+  try {
+    await prisma.travelTip.delete({ where: { id } });
+    revalidatePath("/admin/travel-tips");
+    revalidatePath("/travel-tips");
+    return { success: true, message: "Travel tip deleted" };
+  } catch (error) {
+    console.error("[Admin Travel Tip Delete Error]", error);
+    return { success: false, message: "Failed to delete travel tip" };
+  }
+}
+
 // ===================== USERS =====================
 
 export async function createUser(data: {

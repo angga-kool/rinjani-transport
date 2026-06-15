@@ -696,6 +696,169 @@ async function main() {
       });
 
       console.log(`✅ ${faqsData.length} FAQs seeded`);
+
+      // ==================== TRAVEL TIPS ====================
+      await tx.travelTip.deleteMany({});
+
+      const travelTipsData = [
+        {
+          title: "How to Get from Lombok Airport to Gili Trawangan",
+          slug: "lombok-airport-to-gili-trawangan-guide",
+          excerpt:
+            "A complete step-by-step guide on the best, fastest and cheapest ways to travel from Lombok International Airport to Gili Trawangan island.",
+          category: "Transfer Guide",
+          readTime: "6 min",
+          author: "Rinjani Transport Team",
+          image:
+            "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&h=700&fit=crop",
+          sortOrder: 1,
+          content: `## Getting to Gili Trawangan
+
+Lombok International Airport (LOP) is the main gateway to the Gili Islands. The journey involves a car transfer to a harbour, followed by a boat crossing.
+
+### Option 1: Combined Car + Speed Boat (Recommended)
+The easiest way is to book a combined transfer. A private car picks you up at the airport and drives you to Teluk Nare or Bangsal harbour (about 1.5 - 2 hours), where a speed boat takes you to Gili Trawangan in 15-25 minutes.
+
+- **Total time:** around 2.5 hours
+- **Comfort:** highest, door-to-harbour service
+- **Best for:** families, first-time visitors
+
+### Option 2: Public Boat from Bangsal
+A cheaper but slower option. Take a taxi to Bangsal harbour and board the public boat. Boats leave when full, so waiting times vary.
+
+- **Total time:** 3 - 4 hours
+- **Best for:** budget travellers with flexible schedules
+
+### Tips
+- Book your transfer in advance during peak season (July-August, December).
+- Include your flight number so the driver can monitor delays.
+- Bring cash for snacks and tips, ATMs on the islands can be unreliable.`,
+        },
+        {
+          title: "Teluk Nare vs Bangsal: Which Harbour Should You Choose?",
+          slug: "teluk-nare-vs-bangsal-harbour",
+          excerpt:
+            "Compare the two main departure harbours to the Gili Islands and discover which one suits your trip best.",
+          category: "Travel Tips",
+          readTime: "4 min",
+          author: "Rinjani Transport Team",
+          image:
+            "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1200&h=700&fit=crop",
+          sortOrder: 2,
+          content: `## Two Gateways to the Gilis
+
+Most boats to the Gili Islands depart from one of two harbours: **Teluk Nare** and **Bangsal**.
+
+### Teluk Nare (Private Speed Boats)
+- Calmer, more organised private harbour
+- Faster crossing (15-25 minutes)
+- Used by most pre-booked transfers
+- Slightly higher cost
+
+### Bangsal (Public Harbour)
+- The traditional public port
+- Cheaper public boats
+- Can be crowded and chaotic
+- Boats often wait until full before departing
+
+### Our Recommendation
+If comfort and time matter, choose a Teluk Nare speed boat transfer. If you're on a tight budget and flexible with time, Bangsal public boats are the cheapest option.`,
+        },
+        {
+          title: "Best Time to Visit the Gili Islands",
+          slug: "best-time-to-visit-gili-islands",
+          excerpt:
+            "Find the perfect season for your Gili Islands trip. Weather, sea conditions, crowds and money-saving tips included.",
+          category: "Planning",
+          readTime: "5 min",
+          author: "Rinjani Transport Team",
+          image:
+            "https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=1200&h=700&fit=crop",
+          sortOrder: 3,
+          content: `## When to Go
+
+The Gili Islands are a year-round destination, but timing affects weather, prices and crowds.
+
+### Dry Season (May - September)
+- Best weather, calm seas, sunny days
+- Peak crowds in July-August
+- Higher prices, book early
+
+### Shoulder Season (April, October)
+- Great balance of good weather and fewer crowds
+- Lower prices on accommodation and transfers
+
+### Wet Season (November - March)
+- Occasional rain showers, usually short
+- Quietest period with the best deals
+- Sea can be choppier, check boat schedules
+
+### Verdict
+For the best overall experience, visit in **May, June, September or October** — great weather without the peak-season crowds.`,
+        },
+        {
+          title: "What to Pack for the Gili Islands",
+          slug: "what-to-pack-gili-islands",
+          excerpt:
+            "An essential packing checklist for a smooth and stress-free trip to the Gili Islands and Lombok.",
+          category: "Travel Tips",
+          readTime: "3 min",
+          author: "Rinjani Transport Team",
+          image:
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=700&fit=crop",
+          sortOrder: 4,
+          content: `## Packing Essentials
+
+The Gili Islands are laid-back and car-free, so pack light and smart.
+
+### Must-Haves
+- Reef-safe sunscreen (protect the coral)
+- Light, breathable clothing and swimwear
+- Comfortable sandals or flip-flops
+- Reusable water bottle
+- Waterproof phone pouch for boat rides
+- Cash (Indonesian Rupiah) — ATMs are limited
+
+### Good to Have
+- Snorkel gear (or rent on the island)
+- A light rain jacket in wet season
+- Power bank — power outages happen
+- Mosquito repellent
+
+### Leave Behind
+- Heavy luggage — you'll walk or take a cidomo (horse cart)
+- High heels — sandy paths only!`,
+        },
+      ];
+
+      await tx.travelTip.createMany({
+        data: travelTipsData.map((tip) => ({
+          ...tip,
+          isPublished: true,
+        })),
+      });
+
+      console.log(`✅ ${travelTipsData.length} travel tips seeded`);
+
+      // ==================== REVIEWS ====================
+      await tx.review.deleteMany({});
+
+      const reviewsData = [
+        { customerName: "Sarah M.", country: "Australia", rating: 5, comment: "Amazing service! The driver was waiting at the airport and the boat transfer to Gili T was super smooth. Highly recommended!", isFeatured: true },
+        { customerName: "Marco R.", country: "Italy", rating: 5, comment: "Best transfer company in Lombok. Very punctual and professional. The speed boat was comfortable and fast.", isFeatured: true },
+        { customerName: "Yuki T.", country: "Japan", rating: 5, comment: "Booked airport transfer to Senaru for Rinjani trek. Driver was very friendly and knowledgeable about the area.", isFeatured: true },
+        { customerName: "David K.", country: "United Kingdom", rating: 4, comment: "Good service overall. Boat was a bit crowded but arrived on time. Would use again for the convenience.", isFeatured: false },
+        { customerName: "Lisa van D.", country: "Netherlands", rating: 5, comment: "Used Rinjani Transport for 3 different transfers during our Lombok trip. Every single one was perfect. Great communication via WhatsApp too.", isFeatured: true },
+        { customerName: "Chen W.", country: "China", rating: 5, comment: "Very easy booking process. E-ticket received instantly. The whole journey from airport to Gili Air was comfortable.", isFeatured: false },
+        { customerName: "Anna S.", country: "Germany", rating: 4, comment: "Reliable transfer service. Prices are fair and transparent. No hidden fees which I appreciate.", isFeatured: false },
+        { customerName: "Mike J.", country: "USA", rating: 5, comment: "Our flight was delayed by 2 hours but the driver was still there waiting. Incredible service! Made our first day in Lombok stress-free.", isFeatured: true },
+      ];
+
+      await tx.review.createMany({
+        data: reviewsData.map((r) => ({ ...r, isApproved: true })),
+      });
+
+      console.log(`✅ ${reviewsData.length} reviews seeded`);
     },
     {
       maxWait: 20000,

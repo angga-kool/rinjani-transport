@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
-import { updateBookingStatus } from "@/lib/actions/admin";
 
 interface Props {
   bookingId: string;
@@ -10,29 +11,36 @@ interface Props {
 }
 
 export function CompanyBookingActions({ bookingId, status }: Props) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleConfirm = async () => {
+  const handleAction = async (newStatus: string) => {
     setLoading(true);
-    await updateBookingStatus(bookingId, "confirmed");
-    setLoading(false);
-  };
-
-  const handleComplete = async () => {
-    setLoading(true);
-    await updateBookingStatus(bookingId, "completed");
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/company/bookings/${bookingId}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      toast.success(`Booking ${newStatus}`);
+      router.refresh();
+    } catch {
+      toast.error("Failed to update booking");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex gap-2">
-      {status === "pending" && (
-        <Button size="sm" onClick={handleConfirm} isLoading={loading}>
+      {(status === "pending" || status === "waiting_payment") && (
+        <Button size="sm" onClick={() => handleAction("confirmed")} isLoading={loading}>
           Confirm
         </Button>
       )}
       {status === "confirmed" && (
-        <Button size="sm" variant="outline" onClick={handleComplete} isLoading={loading}>
+        <Button size="sm" variant="outline" onClick={() => handleAction("completed")} isLoading={loading}>
           Complete
         </Button>
       )}

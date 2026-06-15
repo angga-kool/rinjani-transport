@@ -2,42 +2,54 @@
 
 import Link from "next/link";
 import { useApp } from "@/providers/AppProvider";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight, Phone, Shield, Zap } from "lucide-react";
 
 export function CTASection() {
   const { t } = useApp();
 
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-16 md:py-20">
       <div className="mx-auto max-w-[1184px] px-4 md:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-8 py-14 text-center md:px-16 md:py-20">
-          {/* Decorative elements */}
-          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-[80px]" />
-          <div className="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-[80px]" />
+        <div className="relative overflow-hidden rounded-[2rem] bg-gray-950 px-8 py-16 md:px-16 md:py-20">
+          {/* Ambient glow */}
+          <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-primary/15 blur-[120px]" />
+          <div className="absolute -bottom-32 -right-32 h-64 w-64 rounded-full bg-cyan-500/10 blur-[80px]" />
 
-          <div className="relative">
-            <h2 className="text-3xl font-bold text-white md:text-4xl lg:text-5xl">
-              Ready to Book Your Transfer?
+          <div className="relative text-center">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Book Now</p>
+
+            <h2 className="mx-auto mt-4 max-w-xl text-3xl font-extrabold leading-tight text-white md:text-4xl lg:text-[44px]">
+              Your Island Adventure<br />Starts Here
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-base text-gray-400 md:text-lg">
-              Search from 20+ locations and 4 verified operators. Instant confirmation & e-ticket.
+
+            <p className="mx-auto mt-4 max-w-md text-sm text-gray-400 md:text-base">
+              Fast boats, private cars, and shared transfers. 20+ locations, instant booking, verified operators.
             </p>
 
-            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/booking/search"
-                className="inline-flex h-14 items-center gap-2 rounded-full bg-primary px-8 text-base font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30"
+                className="group inline-flex h-13 items-center gap-2.5 rounded-full bg-primary px-8 text-[15px] font-bold text-white shadow-xl shadow-primary/25 transition-all hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.02]"
               >
                 {t("search.searchTransfer")}
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link
-                href="/contact"
-                className="inline-flex h-14 items-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 text-base font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10"
+              <a
+                href="https://wa.me/6281234567890"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-13 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-7 text-[15px] font-medium text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/25"
               >
                 <Phone className="h-4 w-4" />
-                {t("nav.contact")}
-              </Link>
+                WhatsApp Us
+              </a>
+            </div>
+
+            {/* Micro-trust */}
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-6 text-[12px] text-gray-500">
+              <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5 text-emerald-500" />256-bit Secure</span>
+              <span className="flex items-center gap-1.5"><Zap className="h-3.5 w-3.5 text-yellow-500" />Instant Confirmation</span>
+              <span className="flex items-center gap-1.5">Free Cancellation 24h</span>
             </div>
           </div>
         </div>

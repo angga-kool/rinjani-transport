@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 
 const EUR_TO_IDR = 17153;
 export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function DestinationsPage() {
   try {

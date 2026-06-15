@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
@@ -14,18 +14,18 @@ import { getBookingData, setBookingData, type BookingData } from "@/lib/booking-
 import { useApp } from "@/providers/AppProvider";
 
 const PAYMENT_METHODS = [
-  { id: "qris", label: "QRIS", icon: Wallet, description: "Scan QR — GoPay, OVO, Dana, ShopeePay, LinkAja", color: "bg-purple-50 text-purple-600" },
-  { id: "credit_card", label: "Credit / Debit Card", icon: CreditCard, description: "Visa, Mastercard, JCB", color: "bg-blue-50 text-blue-600" },
-  { id: "paypal", label: "PayPal", icon: Wallet, description: "Pay securely with your PayPal account", color: "bg-[#0070BA]/10 text-[#0070BA]" },
-  { id: "usdt", label: "Crypto (USDT)", icon: Shield, description: "Tether USDT — TRC20 / ERC20 network", color: "bg-emerald-50 text-emerald-600" },
-  { id: "bank_transfer", label: "Bank Transfer", icon: Building2, description: "Manual transfer — confirmed in 1-2 hours", color: "bg-gray-100 text-gray-600" },
+  { id: "usdt", label: "Crypto (USDT)", icon: Shield, description: "Tether USDT — TRC20 network (auto-verified)", color: "bg-emerald-50 text-emerald-600", enabled: true },
+  { id: "qris", label: "QRIS", icon: Wallet, description: "Scan QR — GoPay, OVO, Dana, ShopeePay, LinkAja", color: "bg-purple-50 text-purple-600", enabled: false },
+  { id: "credit_card", label: "Credit / Debit Card", icon: CreditCard, description: "Visa, Mastercard, JCB", color: "bg-blue-50 text-blue-600", enabled: false },
+  { id: "paypal", label: "PayPal", icon: Wallet, description: "Pay securely with your PayPal account", color: "bg-[#0070BA]/10 text-[#0070BA]", enabled: false },
+  { id: "bank_transfer", label: "Bank Transfer", icon: Building2, description: "Manual transfer — confirmed in 1-2 hours", color: "bg-gray-100 text-gray-600", enabled: false },
 ];
 
 export default function BookingPaymentPage() {
   const router = useRouter();
   const { t, formatPrice } = useApp();
   const [booking, setBooking] = useState<BookingData | null>(null);
-  const [selectedMethod, setSelectedMethod] = useState("qris");
+  const [selectedMethod, setSelectedMethod] = useState("usdt");
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,9 +33,30 @@ export default function BookingPaymentPage() {
 
   const EUR_TO_IDR = 17153;
 
+  // Countdown timer (60 minutes from page load)
+  const [timeLeft, setTimeLeft] = useState(60 * 60); // 60 minutes in seconds
+  const [expired, setExpired] = useState(false);
+
+  useEffect(() => {
+    if (timeLeft <= 0) { setExpired(true); return; }
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) { setExpired(true); clearInterval(timer); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatCountdown = useCallback((seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }, []);
+
   useEffect(() => {
     const data = getBookingData();
-    if (!data || !data.customerName) {
+    if (!data || !data.customerName || !data.serviceId || !data.routeId || !data.companyId || !data.departureDate) {
       router.push("/booking/search");
       return;
     }
@@ -93,7 +114,14 @@ export default function BookingPaymentPage() {
 
       if (!bookingCode) throw new Error("No booking code received from server");
 
-      // Step 2: Process payment
+      // Step 2: If crypto payment, redirect to crypto page
+      if (selectedMethod === "usdt") {
+        setBookingData({ bookingCode });
+        router.push(`/booking/payment/crypto?code=${bookingCode}&amount=${booking.totalPrice}`);
+        return;
+      }
+
+      // Step 2: Process payment (non-crypto)
       const paymentRes = await fetch("/api/payment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,6 +177,37 @@ export default function BookingPaymentPage() {
     <div className="mx-auto max-w-[1184px] px-4 py-8 md:px-6 lg:px-8">
       <BookingStepper currentStep={4} />
 
+      {/* Countdown Timer */}
+      <div className={cn(
+        "mt-6 flex items-center gap-3 rounded-xl border p-4",
+        expired ? "border-red-200 bg-red-50" : timeLeft < 300 ? "border-amber-200 bg-amber-50" : "border-blue-100 bg-blue-50"
+      )}>
+        <Clock className={cn("h-5 w-5", expired ? "text-red-500" : timeLeft < 300 ? "text-amber-500" : "text-blue-500")} />
+        {expired ? (
+          <div>
+            <p className="text-sm font-medium text-red-800">Booking session expired</p>
+            <p className="text-xs text-red-600">Please <Link href="/booking/search" className="underline font-semibold">start a new booking</Link>.</p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm font-medium text-gray-800">
+              Complete payment within <span className={cn("font-mono font-bold", timeLeft < 300 ? "text-red-600" : "text-blue-700")}>{formatCountdown(timeLeft)}</span>
+            </p>
+            <p className="text-xs text-gray-500">Your booking will expire if not paid within this time</p>
+          </div>
+        )}
+      </div>
+
+      {expired ? (
+        <div className="mt-12 text-center">
+          <AlertCircle className="mx-auto h-12 w-12 text-red-400" />
+          <h2 className="mt-4 text-xl font-bold text-gray-900">Session Expired</h2>
+          <p className="mt-2 text-gray-600">Your booking session has expired. Please search and book again.</p>
+          <Link href="/booking/search" className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary-dark">
+            Start New Booking <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      ) : (
       <div className="mt-8 grid gap-8 lg:grid-cols-3">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -170,13 +229,17 @@ export default function BookingPaymentPage() {
               {PAYMENT_METHODS.map((method) => {
                 const Icon = method.icon;
                 const isActive = selectedMethod === method.id;
+                const isDisabled = !method.enabled;
                 return (
                   <button
                     key={method.id}
-                    onClick={() => setSelectedMethod(method.id)}
+                    onClick={() => !isDisabled && setSelectedMethod(method.id)}
+                    disabled={isDisabled}
                     className={cn(
                       "flex w-full items-center gap-4 rounded-xl border p-4 text-left transition-all",
-                      isActive
+                      isDisabled
+                        ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                        : isActive
                         ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary/20"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     )}
@@ -185,14 +248,17 @@ export default function BookingPaymentPage() {
                       <Icon className="h-6 w-6" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-gray-900">{method.label}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900">{method.label}</p>
+                        {isDisabled && <span className="rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">Coming Soon</span>}
+                      </div>
                       <p className="text-xs text-gray-500">{method.description}</p>
                     </div>
                     <div className={cn(
                       "flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all",
-                      isActive ? "border-primary bg-primary" : "border-gray-300"
+                      isDisabled ? "border-gray-200" : isActive ? "border-primary bg-primary" : "border-gray-300"
                     )}>
-                      {isActive && <CheckCircle2 className="h-4 w-4 text-white" />}
+                      {isActive && !isDisabled && <CheckCircle2 className="h-4 w-4 text-white" />}
                     </div>
                   </button>
                 );
@@ -367,6 +433,7 @@ export default function BookingPaymentPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

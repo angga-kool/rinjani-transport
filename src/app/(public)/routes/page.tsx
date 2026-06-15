@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 300; // ISR: revalidate every 5 minutes
 
 // EUR to IDR conversion factor approximate
 // formatPrice in AppProvider expects IDR amounts

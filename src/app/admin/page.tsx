@@ -177,6 +177,55 @@ export default function AdminDashboardPage() {
           </table>
         </div>
       </div>
+
+      {/* Top Routes & Companies Charts */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        {/* Top Routes Bar Chart */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <h3 className="text-sm font-bold text-gray-900">Top Routes</h3>
+          <div className="mt-4 space-y-3">
+            {data.topRoutes.slice(0, 5).map((route, i) => {
+              const maxBookings = Math.max(...data.topRoutes.map(r => r.bookings), 1);
+              const pct = (route.bookings / maxBookings) * 100;
+              return (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-600 truncate max-w-[200px]">{route.route}</span>
+                    <span className="text-xs font-bold text-gray-900">{route.bookings}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-400 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {data.topRoutes.length === 0 && <p className="text-xs text-gray-400">No data yet</p>}
+          </div>
+        </div>
+
+        {/* Top Companies */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <h3 className="text-sm font-bold text-gray-900">Top Operators</h3>
+          <div className="mt-4 space-y-3">
+            {data.topCompanies.slice(0, 5).map((comp, i) => {
+              const maxRev = Math.max(...data.topCompanies.map(c => c.revenue), 1);
+              const pct = (comp.revenue / maxRev) * 100;
+              return (
+                <div key={i}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-600">{comp.name}</span>
+                    <span className="text-xs font-bold text-gray-900">€{comp.revenue.toLocaleString()}</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+            {data.topCompanies.length === 0 && <p className="text-xs text-gray-400">No data yet</p>}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

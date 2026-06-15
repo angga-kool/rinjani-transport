@@ -97,15 +97,15 @@ export default function BookingResultsPage() {
     <div className="mx-auto max-w-[1184px] px-4 py-8 md:px-6 lg:px-8">
       <BookingStepper currentStep={1} />
 
-      {/* Search Summary */}
-      <div className="mt-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+      {/* Route Header */}
+      <div className="mt-8 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 p-6 md:p-8">
+        <h1 className="text-xl font-extrabold text-white md:text-2xl">
           {from && to
             ? `${formatName(from)} → ${formatName(to)}`
             : t("search.searchTransfer")}
         </h1>
         {departureDate && (
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-white/60">
             {new Date(departureDate).toLocaleDateString("en-GB", {
               weekday: "long",
               day: "numeric",
@@ -118,6 +118,11 @@ export default function BookingResultsPage() {
             {tripType === "return" && " · Return trip"}
           </p>
         )}
+        <div className="mt-3">
+          <Link href="/booking/search" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80">
+            <Search className="h-3 w-3" /> Modify search
+          </Link>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -185,7 +190,7 @@ export default function BookingResultsPage() {
                 currency={result.currency}
                 isVerified={result.isVerified}
                 badges={result.badges}
-                // Pass booking data via URL params
+                capacity={result.capacity}
                 bookingParams={{
                   serviceId: result.serviceId,
                   routeId: result.routeId,

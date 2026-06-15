@@ -37,6 +37,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Booking already paid" }, { status: 400 });
     }
 
+    // Check if booking has expired
+    if (booking.expiresAt && new Date() > new Date(booking.expiresAt)) {
+      // Auto-expire the booking
+      await prisma.booking.update({
+        where: { bookingCode },
+        data: { bookingStatus: "expired", paymentStatus: "expired" },
+      });
+      return NextResponse.json(
+        { error: "Booking has expired. Please create a new booking." },
+        { status: 410 }
+      );
+    }
+
+    // Check if booking is in a payable state (waiting_payment or pending with failed payment = retry)
+    if (booking.bookingStatus === "cancelled" || booking.bookingStatus === "expired") {
+      return NextResponse.json(
+        { error: "This booking cannot be paid. It has been cancelled or expired." },
+        { status: 400 }
+      );
+    }
+
+    // Validate payment amount matches booking total (prevent manipulation)
+    const expectedAmount = booking.totalPrice;
+    const tolerance = 0.01; // Allow tiny floating-point differences
+    if (Math.abs(amount - expectedAmount) > tolerance) {
+      return NextResponse.json(
+        { error: "Payment amount does not match booking total" },
+        { status: 400 }
+      );
+    }
+
     // Create payment record
     const payment = await prisma.payment.create({
       data: {

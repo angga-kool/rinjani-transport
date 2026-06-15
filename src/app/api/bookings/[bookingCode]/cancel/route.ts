@@ -23,6 +23,21 @@ export async function POST(_request: NextRequest, { params }: Props) {
       return NextResponse.json({ error: "Cannot cancel a completed booking" }, { status: 400 });
     }
 
+    // Check 24-hour cancellation policy
+    const now = new Date();
+    const departureDateTime = new Date(booking.departureDate);
+    // Parse departure time (e.g., "09:00") and set on departure date
+    const [hours, minutes] = (booking.departureTime || "00:00").split(":").map(Number);
+    departureDateTime.setHours(hours, minutes, 0, 0);
+    
+    const hoursUntilDeparture = (departureDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (hoursUntilDeparture < 24) {
+      return NextResponse.json(
+        { error: "Cancellation is only allowed at least 24 hours before departure" },
+        { status: 400 }
+      );
+    }
+
     const updated = await prisma.booking.update({
       where: { bookingCode },
       data: {

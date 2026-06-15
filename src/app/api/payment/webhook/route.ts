@@ -2,9 +2,43 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendEmail, generateBookingConfirmationEmail } from "@/lib/email";
 
+/**
+ * Verify Midtrans webhook signature.
+ * SHA512(order_id + status_code + gross_amount + server_key)
+ */
+async function verifyMidtransSignature(body: Record<string, unknown>): Promise<boolean> {
+  const serverKey = process.env.MIDTRANS_SERVER_KEY;
+  if (!serverKey) return true; // Skip verification if no key configured (dev mode)
+
+  const orderId = String(body.order_id || "");
+  const statusCode = String(body.status_code || "");
+  const grossAmount = String(body.gross_amount || "");
+  const signatureKey = String(body.signature_key || "");
+
+  if (!signatureKey) return false;
+
+  const payload = orderId + statusCode + grossAmount + serverKey;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(payload);
+  const hashBuffer = await crypto.subtle.digest("SHA-512", data);
+  const expectedSignature = Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return expectedSignature === signatureKey;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Verify signature (skip if MIDTRANS_SERVER_KEY not set)
+    const isValid = await verifyMidtransSignature(body);
+    if (!isValid) {
+      console.warn("[Payment Webhook] Invalid signature");
+      return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+    }
+
     const { order_id, transaction_status, fraud_status } = body;
 
     // Midtrans webhook format

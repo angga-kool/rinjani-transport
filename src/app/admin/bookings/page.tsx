@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
+import { BookingDetailDrawer } from "@/components/admin/BookingDetailDrawer";
 
 interface Booking {
   id: string;
@@ -46,10 +48,10 @@ interface Filters {
 }
 
 const statusVariant: Record<string, "success" | "warning" | "danger" | "info"> = {
-  confirmed: "success", pending: "warning", cancelled: "danger", completed: "info",
+  confirmed: "success", pending: "warning", waiting_payment: "warning", cancelled: "danger", completed: "info", expired: "danger",
 };
 const paymentVariant: Record<string, "success" | "warning" | "danger" | "neutral" | "popular"> = {
-  paid: "success", pending: "warning", failed: "danger", expired: "neutral", refunded: "popular",
+  paid: "success", pending: "warning", failed: "danger", expired: "danger", refunded: "popular",
 };
 
 export default function AdminBookingsPage() {
@@ -60,6 +62,8 @@ export default function AdminBookingsPage() {
   const [filters, setFilters] = useState<Filters>({ status: "", payment: "", search: "", page: 1 });
   const [searchInput, setSearchInput] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   const fetchBookings = useCallback(async (currentFilters: Filters) => {
     setLoading(true);
@@ -131,7 +135,18 @@ export default function AdminBookingsPage() {
           <h2 className="text-xl font-bold text-gray-900">Bookings</h2>
           <p className="mt-1 text-sm text-gray-500">Manage all transfer bookings</p>
         </div>
-        <Button variant="outline" size="sm">Export CSV</Button>
+        <Button variant="outline" size="sm" onClick={() => {
+          const params = new URLSearchParams();
+          if (filters.status) params.set("status", filters.status);
+          if (filters.payment) params.set("payment", filters.payment);
+          if (filters.search) params.set("search", filters.search);
+          const url = `/api/admin/bookings/export?${params.toString()}`;
+          window.open(url, "_blank");
+          toast.success("CSV export started");
+        }}>
+          <Download className="mr-1 h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       {/* Filters */}
@@ -153,9 +168,11 @@ export default function AdminBookingsPage() {
         >
           <option value="">All Status</option>
           <option value="pending">Pending</option>
+          <option value="waiting_payment">Waiting Payment</option>
           <option value="confirmed">Confirmed</option>
           <option value="cancelled">Cancelled</option>
           <option value="completed">Completed</option>
+          <option value="expired">Expired</option>
         </select>
         <select
           className="h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm"
@@ -255,13 +272,37 @@ export default function AdminBookingsPage() {
                         {b.currency === "EUR" ? "€" : b.currency}{b.totalPrice}
                       </td>
                       <td className="px-4 py-3">
-                        <Badge variant={statusVariant[b.bookingStatus] || "info"}>{b.bookingStatus}</Badge>
+                        <select
+                          value={b.bookingStatus}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            try {
+                              const res = await fetch(`/api/admin/bookings/${b.id}/status`, {
+                                method: "PUT",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ bookingStatus: newStatus }),
+                              });
+                              if (res.ok) {
+                                setBookings(prev => prev.map(bk => bk.id === b.id ? { ...bk, bookingStatus: newStatus } : bk));
+                                toast.success(`Status → ${newStatus}`);
+                              }
+                            } catch { toast.error("Failed"); }
+                          }}
+                          className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-medium"
+                        >
+                          <option value="pending">pending</option>
+                          <option value="waiting_payment">waiting_payment</option>
+                          <option value="confirmed">confirmed</option>
+                          <option value="completed">completed</option>
+                          <option value="cancelled">cancelled</option>
+                          <option value="expired">expired</option>
+                        </select>
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={paymentVariant[b.paymentStatus] || "neutral"}>{b.paymentStatus}</Badge>
                       </td>
                       <td className="px-4 py-3">
-                        <button className="text-xs font-semibold text-primary hover:underline">View</button>
+                        <button onClick={() => { setSelectedBooking(b); setDrawerOpen(true); }} className="text-xs font-semibold text-primary hover:underline">View</button>
                       </td>
                     </tr>
                   ))
@@ -307,6 +348,31 @@ export default function AdminBookingsPage() {
           )}
         </>
       )}
+
+      <BookingDetailDrawer
+        open={drawerOpen}
+        onClose={() => { setDrawerOpen(false); setSelectedBooking(null); }}
+        booking={selectedBooking ? {
+          bookingCode: selectedBooking.bookingCode,
+          customerName: selectedBooking.customerName,
+          customerEmail: selectedBooking.customerEmail,
+          customerPhone: selectedBooking.customerPhone,
+          route: selectedBooking.route,
+          departureDate: selectedBooking.departureDate,
+          departureTime: selectedBooking.departureTime,
+          adultsCount: selectedBooking.adultsCount,
+          childrenCount: selectedBooking.childrenCount,
+          infantsCount: selectedBooking.infantsCount,
+          totalPrice: selectedBooking.totalPrice,
+          currency: selectedBooking.currency,
+          bookingStatus: selectedBooking.bookingStatus as "pending" | "confirmed" | "cancelled" | "completed",
+          paymentStatus: selectedBooking.paymentStatus as "pending" | "paid" | "failed" | "expired" | "refunded",
+          companyName: selectedBooking.companyName,
+          pickupPoint: selectedBooking.pickupPoint || undefined,
+          flightNumber: selectedBooking.flightNumber || undefined,
+          specialRequest: selectedBooking.specialRequest || undefined,
+        } : null}
+      />
     </div>
   );
 }

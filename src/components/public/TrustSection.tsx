@@ -7,42 +7,40 @@ export function TrustSection() {
   const { t } = useApp();
 
   const TRUST_ITEMS = [
-    { icon: Mic, label: "English speaking chauffeurs" },
-    { icon: Anchor, label: "Comfortable exclusive boats & cars" },
-    { icon: ShieldCheck, label: "Licensed transport company" },
-    { icon: UserCheck, label: "Qualified and experienced drivers" },
-    { icon: Route, label: "Door-to-door service" },
+    { icon: Mic, label: "English speaking chauffeurs", desc: "Clear communication throughout your journey" },
+    { icon: Anchor, label: "Premium boats & cars", desc: "Modern fleet maintained to highest standards" },
+    { icon: ShieldCheck, label: "Licensed & insured", desc: "Government registered, fully insured" },
+    { icon: UserCheck, label: "Experienced drivers", desc: "Professional crew with 5+ years experience" },
+    { icon: Route, label: "Door-to-door service", desc: "Picked up and dropped off at your location" },
   ];
 
   return (
-    <section className="bg-[#f5f7fa] py-16 md:py-24">
-      <div className="mx-auto max-w-[1280px] px-4 md:px-6 lg:px-8">
+    <section className="py-16 md:py-20">
+      <div className="mx-auto max-w-[1184px] px-4 md:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
-            Rinjani Transport
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary">
+            Why Choose Us
           </p>
-          <h2 className="mt-3 text-2xl font-bold text-gray-900 md:text-3xl lg:text-[42px]">
+          <h2 className="mt-3 text-2xl font-extrabold text-gray-900 md:text-3xl">
             {t("sections.whyBookWithUs")}
           </h2>
-          <div className="mx-auto mt-4 h-1 w-12 rounded-full bg-primary" />
         </div>
 
-        {/* Icon Grid — black premium icons */}
-        <div className="mt-14 grid grid-cols-2 gap-10 sm:grid-cols-3 lg:grid-cols-5">
+        {/* Cards — premium glassmorphic style */}
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {TRUST_ITEMS.map((item, i) => {
             const Icon = item.icon;
             return (
-              <div key={i} className="group flex flex-col items-center text-center">
-                <div className="relative">
-                  <div className="absolute -inset-2 rounded-full border-2 border-transparent transition-all duration-300 group-hover:border-gray-900/10" />
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300 group-hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] group-hover:-translate-y-1">
-                    <Icon className="h-10 w-10 text-gray-900" strokeWidth={1.5} />
-                  </div>
+              <div
+                key={i}
+                className="group flex flex-col items-center rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-primary/20"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-950 transition-all group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/20">
+                  <Icon className="h-6 w-6 text-white" strokeWidth={1.8} />
                 </div>
-                <p className="mt-5 max-w-[140px] text-[13px] font-semibold leading-snug text-gray-700 transition-colors group-hover:text-gray-900">
-                  {item.label}
-                </p>
+                <p className="mt-4 text-sm font-bold text-gray-900">{item.label}</p>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-gray-500">{item.desc}</p>
               </div>
             );
           })}

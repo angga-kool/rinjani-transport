@@ -31,6 +31,7 @@ interface SearchResultCardProps {
   currency: string;
   isVerified?: boolean;
   badges?: string[];
+  capacity?: number | null;
   bookingParams?: BookingParams;
 }
 
@@ -47,6 +48,7 @@ export function SearchResultCard({
   currency,
   isVerified,
   badges,
+  capacity,
   bookingParams,
 }: SearchResultCardProps) {
   // Build the booking URL with all necessary params
@@ -96,6 +98,7 @@ export function SearchResultCard({
 
         {badges && badges.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
+            {capacity && <Badge variant="info">{capacity} seats</Badge>}
             {badges.map((badge) => (
               <Badge key={badge} variant="instant">{badge}</Badge>
             ))}

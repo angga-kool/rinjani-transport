@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
+import { sendEmail, generateStatusChangeEmail } from "@/lib/email";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -21,6 +23,35 @@ export async function PUT(request: NextRequest, { params }: Props) {
       where: { id },
       data,
     });
+
+    // Audit log
+    logAudit({
+      action: "UPDATE_STATUS",
+      entity: "booking",
+      entityId: booking.bookingCode,
+      details: JSON.stringify(data),
+    });
+
+    // Send email notification for status changes
+    if (bookingStatus && ["confirmed", "cancelled", "expired", "completed"].includes(bookingStatus)) {
+      const fullBooking = await prisma.booking.findUnique({
+        where: { id },
+        include: { route: { include: { fromLocation: true, toLocation: true } } },
+      });
+      if (fullBooking) {
+        sendEmail({
+          to: fullBooking.customerEmail,
+          subject: `Booking ${bookingStatus.charAt(0).toUpperCase() + bookingStatus.slice(1)}: ${fullBooking.bookingCode}`,
+          html: generateStatusChangeEmail({
+            bookingCode: fullBooking.bookingCode,
+            customerName: fullBooking.customerName,
+            newStatus: bookingStatus,
+            route: `${fullBooking.route.fromLocation.name} → ${fullBooking.route.toLocation.name}`,
+            departureDate: fullBooking.departureDate.toISOString().split("T")[0],
+          }),
+        }).catch(console.error);
+      }
+    }
 
     return NextResponse.json({
       success: true,

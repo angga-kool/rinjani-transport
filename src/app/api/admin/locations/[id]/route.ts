@@ -8,7 +8,18 @@ export async function PUT(request: NextRequest, { params }: Props) {
     const { id } = await params;
     const body = await request.json();
 
-    const location = await prisma.location.update({ where: { id }, data: body });
+    // Whitelist allowed fields
+    const allowedFields = ["name", "slug", "type", "region", "description", "image", "gallery", "latitude", "longitude", "isActive", "seoTitle", "seoDescription"];
+    const sanitized: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (key in body) sanitized[key] = body[key];
+    }
+
+    if (Object.keys(sanitized).length === 0) {
+      return NextResponse.json({ error: "No valid fields provided" }, { status: 400 });
+    }
+
+    const location = await prisma.location.update({ where: { id }, data: sanitized });
     return NextResponse.json({ success: true, location });
   } catch (error) {
     console.error("[API PUT /admin/locations/:id]", error);

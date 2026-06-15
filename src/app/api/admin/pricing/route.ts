@@ -19,6 +19,7 @@ export async function GET() {
     return NextResponse.json({
       prices: prices.map((p) => ({
         id: p.id,
+        serviceId: p.serviceId,
         serviceName: p.service.name,
         companyName: p.service.company.name,
         routeTitle: p.service.route.title,

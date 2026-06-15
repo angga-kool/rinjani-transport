@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import { BookingStepper } from "@/components/booking/BookingStepper";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -287,6 +288,27 @@ export default function BookingSuccessPage() {
               WhatsApp
             </Button>
           </a>
+        </div>
+
+        {/* Share Booking */}
+        <div className="rounded-2xl border border-gray-100 bg-white p-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Share Booking</p>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`My transfer booking ${booking.bookingCode} on Rinjani Transport: ${booking.route.fromLocation.name} → ${booking.route.toLocation.name} on ${booking.departureDate}. Track: ${typeof window !== 'undefined' ? window.location.origin : ''}/booking/tracking`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/10 px-4 py-2 text-xs font-medium text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> Share via WhatsApp
+            </a>
+            <button
+              onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/booking/tracking`); toast.success("Link copied!"); }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-4 py-2 text-xs font-medium text-gray-600 hover:bg-gray-200 transition-colors"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copy Tracking Link
+            </button>
+          </div>
         </div>
 
         {/* Support + Rating */}

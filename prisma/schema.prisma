@@ -47,9 +47,11 @@ enum PaymentStatus {
 
 enum BookingStatus {
   pending
+  waiting_payment
   confirmed
   cancelled
   completed
+  expired
 }
 
 enum PassengerType {
@@ -225,6 +227,7 @@ model Booking {
   dropoffPoint  String?       @map("dropoff_point")
   flightNumber  String?       @map("flight_number")
   specialRequest String?      @map("special_request") @db.Text
+  expiresAt     DateTime?     @map("expires_at")
   passengers    Passenger[]
   payments      Payment[]
   tickets       Ticket[]
@@ -299,4 +302,56 @@ model Page {
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("pages")
+}
+
+model TravelTip {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  excerpt        String?  @db.Text
+  content        String   @db.Text
+  image          String?
+  category       String   @default("Travel Tips")
+  readTime       String?  @map("read_time")
+  author         String?
+  sortOrder      Int      @default(0) @map("sort_order")
+  isPublished    Boolean  @default(true) @map("is_published")
+  seoTitle       String?  @map("seo_title")
+  seoDescription String?  @map("seo_description") @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("travel_tips")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  userName  String?  @map("user_name")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  details   String?  @db.Text
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([entity, createdAt])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  customerName String  @map("customer_name")
+  country     String?
+  rating      Int      @default(5)
+  comment     String   @db.Text
+  routeId     String?  @map("route_id")
+  companyId   String?  @map("company_id")
+  isApproved  Boolean  @default(false) @map("is_approved")
+  isFeatured  Boolean  @default(false) @map("is_featured")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([isApproved, isFeatured])
+  @@map("reviews")
 }
